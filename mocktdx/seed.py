@@ -111,13 +111,13 @@ RULES = [
 ]
 
 TECHNICIANS = [  # username, first, last, title, dept, groups, role
-    ("hrprov-svc", "HR Provisioning", "(integration)", "Service account", 700, [102], "Technician", tdx.INTEGRATION_UID),
-    ("ops.agent", "Dana", "Okafor", "Help Desk Technician", 700, [101], "Technician", None),
-    ("iam.engineer", "Germaine", "Beazer", "Automation Engineer", 700, [102, 101], "Technician", None),
-    ("desktop.tech", "Marcus", "Lindqvist", "Desktop Support Technician", 700, [103], "Technician", None),
-    ("facilities", "Lena", "Oyelaran", "Facilities Coordinator", 400, [104], "Technician", None),
-    ("hr.generalist", "Priya", "Sandoval", "HR Generalist", 800, [105], "Technician", None),
-    ("it.director", "Victor", "Abernathy", "IT Director", 700, [101, 102, 103], "Admin", None),
+    ("svc-hrprov", "HR Provisioning", "(integration)", "Service account", 700, [102], "Technician", tdx.INTEGRATION_UID),
+    ("dokafor", "Dana", "Okafor", "Help Desk Technician", 700, [101], "Technician", None),
+    ("gbeazer", "Germaine", "Beazer", "Automation Engineer", 700, [102, 101], "Technician", None),
+    ("mlindqvist", "Marcus", "Lindqvist", "Desktop Support Technician", 700, [103], "Technician", None),
+    ("loyelaran", "Lena", "Oyelaran", "Facilities Coordinator", 400, [104], "Technician", None),
+    ("psandoval", "Priya", "Sandoval", "HR Generalist", 800, [105], "Technician", None),
+    ("vabernathy", "Victor", "Abernathy", "IT Director", 700, [101, 102, 103], "Admin", None),
 ]
 
 
@@ -143,15 +143,15 @@ def seed(conn: sqlite3.Connection, settings: Settings) -> dict:
                                 uid=fixed_uid or str(uuid.uuid5(uuid.NAMESPACE_URL, f"mock-tdx/tech/{username}")))
         uids[username] = uid
         conn.executemany("INSERT OR IGNORE INTO group_members(GroupID, UID) VALUES (?, ?)", [(g, uid) for g in gids])
-    director = uids["it.director"]
-    for username in ("ops.agent", "iam.engineer", "desktop.tech"):
+    director = uids["vabernathy"]
+    for username in ("dokafor", "gbeazer", "mlindqvist"):
         conn.execute("UPDATE people SET ReportsToUID = ? WHERE UID = ?", (director, uids[username]))
     conn.commit()
 
     # a few tickets so the desktop is not empty
     t1 = tdx.create_ticket(conn, settings, {"TypeID": 2005, "Title": "Teller workstation at Harbor Branch will not boot", "Description": "Blue screen on start, INACCESSIBLE_BOOT_DEVICE.",
-                                            "PriorityID": 3, "RequestorUid": uids["hr.generalist"]}, uids["ops.agent"], source="Phone")
+                                            "PriorityID": 3, "RequestorUid": uids["psandoval"]}, uids["dokafor"], source="Phone")
     t2 = tdx.create_ticket(conn, settings, {"TypeID": 2004, "FormID": 3004, "Title": "Second monitor for loan processing desk", "PriorityID": 1,
-                                            "RequestorUid": uids["hr.generalist"], "Attributes": [{"ID": 1008, "Value": "Monitor"}]}, uids["hr.generalist"], source="Portal")
-    tdx.update_ticket_fields(conn, settings, t1["ID"], {"ResponsibleUid": uids["desktop.tech"], "StatusID": 79}, uids["ops.agent"])
+                                            "RequestorUid": uids["psandoval"], "Attributes": [{"ID": 1008, "Value": "Monitor"}]}, uids["psandoval"], source="Portal")
+    tdx.update_ticket_fields(conn, settings, t1["ID"], {"ResponsibleUid": uids["mlindqvist"], "StatusID": 79}, uids["dokafor"])
     return {"seeded": True, "people": len(uids), "tickets": 2, "integration_uid": tdx.INTEGRATION_UID}

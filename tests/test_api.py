@@ -13,10 +13,10 @@ def test_auth_paths(client):
     assert client.get("/TDWebApi/api/431/tickets/statuses").status_code == 401
     h = _admin(client)
     assert client.get("/TDWebApi/api/auth/getuser", headers=h).json()["FullName"].startswith("HR Provisioning")
-    r = client.post("/TDWebApi/api/auth", json={"username": "iam.engineer", "password": "test-pass"})
+    r = client.post("/TDWebApi/api/auth", json={"username": "gbeazer", "password": "test-pass"})
     assert r.status_code == 200
     me = client.get("/TDWebApi/api/auth/getuser", headers={"Authorization": f"Bearer {r.text}"}).json()
-    assert me["UserName"] == "iam.engineer" and 102 in me["GroupIDs"]
+    assert me["UserName"] == "gbeazer" and 102 in me["GroupIDs"]
     assert client.get("/TDWebApi/api/999/tickets/statuses", headers=h).status_code == 404
 
 

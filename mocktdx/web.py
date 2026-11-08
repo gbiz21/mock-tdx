@@ -66,7 +66,7 @@ def _acting(request: Request, conn):
     uid = request.cookies.get("tdx_uid")
     row = tdx.person(conn, uid) if uid else None
     if not row:
-        row = tdx.person_by(conn, UserName="ops.agent") or conn.execute("SELECT * FROM people WHERE SecurityRoleName != 'Client' ORDER BY UserName LIMIT 1").fetchone()
+        row = tdx.person_by(conn, UserName="dokafor") or conn.execute("SELECT * FROM people WHERE SecurityRoleName != 'Client' ORDER BY UserName LIMIT 1").fetchone()
     return row
 
 
