@@ -1,0 +1,24 @@
+# Traefik dynamic route for the mock ITSM (itsm-01, VLAN 60).
+#   scp deploy/traefik/itsm.yml traefik:/opt/traefik/dynamic/itsm.yml
+# DNS: Unbound host override itsm.lab.bkre8tive.com -> 10.10.10.6
+http:
+  routers:
+    itsm:
+      rule: "Host(`itsm.lab.bkre8tive.com`)"
+      entryPoints: [websecure]
+      service: itsm
+      tls: {}
+    itsm-http:
+      rule: "Host(`itsm.lab.bkre8tive.com`)"
+      entryPoints: [web]
+      service: itsm
+      middlewares: [itsm-https-redirect]
+  middlewares:
+    itsm-https-redirect:
+      redirectScheme: { scheme: https, permanent: true }
+  services:
+    itsm:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://10.10.60.21:8090"   # itsm-01 on the Development VLAN

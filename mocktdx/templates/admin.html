@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block sub %}<div class="sub"><div class="wrap">{% for k, label in [('types','Ticket Types'),('statuses','Statuses'),('forms','Forms'),('groups','Groups'),('services','Services'),('workflows','Workflows'),('rules','Automation Rules'),('api','API'),('log','API Log')] %}<a href="/TDAdmin?tab={{ k }}" class="{% if tab == k %}on{% endif %}">{{ label }}</a>{% endfor %}</div></div>{% endblock %}
+{% block content %}
+<h1>Admin · {{ tab }}</h1>
+{% if tab == 'types' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Category</th><th>Name</th></tr>{% for t in L.types %}<tr><td>{{ t.ID }}</td><td>{{ t.CategoryName }}</td><td>{{ t.Name }}</td></tr>{% endfor %}</table></div></div>
+{% elif tab == 'statuses' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Name</th><th>Class</th></tr>{% for st in L.statuses %}<tr><td>{{ st.ID }}</td><td>{{ st.Name }}</td><td>{{ st.StatusClass }}</td></tr>{% endfor %}</table>
+  <table style="margin-top:8px"><tr><th>ID</th><th>Priority</th></tr>{% for p in L.priorities %}<tr><td>{{ p.ID }}</td><td>{{ p.Name }}</td></tr>{% endfor %}</table></div></div>
+{% elif tab == 'forms' %}{% for fid, fm in L.forms.items() %}<div class="card"><div class="hd">{{ fid }} · {{ fm.Name }} <span class="muted">type {{ fm.TypeID }}</span></div><div class="bd" style="padding:0"><table><tr><th>Attribute ID</th><th>Name</th><th>Type</th><th>Required</th><th>Choices</th></tr>
+  {% for a in fm.Attributes %}<tr><td class="mono">{{ a.ID }}</td><td>{{ a.Name }}</td><td>{{ a.FieldType }}</td><td>{{ 'Yes' if a.IsRequired else '' }}</td><td>{% for c in a.Choices or [] %}{{ c.Name }}{% if not loop.last %} · {% endif %}{% endfor %}</td></tr>{% endfor %}</table></div></div>{% endfor %}
+{% elif tab == 'groups' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Group</th><th>Description</th><th>Members</th></tr>{% for g in L.groups %}<tr><td>{{ g.ID }}</td><td>{{ g.Name }}</td><td>{{ g.Description }}</td><td>{{ members[g.ID] | join(', ') }}</td></tr>{% endfor %}</table></div></div>
+  <div class="card"><div class="hd">Accounts / Departments</div><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Name</th><th>HR code</th></tr>{% for a in L.accounts %}<tr><td>{{ a.ID }}</td><td>{{ a.Name }}</td><td class="mono">{{ a.Code }}</td></tr>{% endfor %}</table></div></div>
+{% elif tab == 'services' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Category</th><th>Service</th><th>Type</th><th>Form</th><th>Description</th></tr>{% for sv in services %}<tr><td>{{ sv.ID }}</td><td>{{ sv.CategoryName }}</td><td>{{ sv.Name }}</td><td>{{ sv.TypeID }}</td><td>{{ sv.FormID }}</td><td>{{ sv.Description }}</td></tr>{% endfor %}</table></div></div>
+{% elif tab == 'workflows' %}{% for w in L.workflows %}<div class="card"><div class="hd">{{ w.ID }} · {{ w.Name }}</div><div class="bd"><p class="muted" style="margin:0 0 8px">{{ w.Description }}</p><pre class="mono" style="margin:0;white-space:pre-wrap;font-size:11.5px">{{ w.Definition }}</pre></div></div>{% endfor %}
+{% elif tab == 'rules' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>#</th><th>Rule</th><th>Trigger</th><th>Conditions</th><th>Actions</th></tr>{% for r in rules %}<tr><td>{{ r.SortOrder }}</td><td>{{ r.Name }}</td><td>{{ r.Trigger }}</td><td class="mono">{{ r.Conditions }}</td><td class="mono">{{ r.Actions }}</td></tr>{% endfor %}</table></div></div>
+{% elif tab == 'api' %}<div class="card"><div class="hd">Web API</div><div class="bd">
+  <div class="fields"><div class="field"><label>Base URL</label><div class="mono">{{ request.url.scheme }}://{{ request.url.netloc }}/TDWebApi/api</div></div>
+  <div class="field"><label>Admin service account BEID</label><div class="mono">{{ s.beid }}</div></div>
+  <div class="field"><label>Web Services Key</label><div>{% if s.web_services_key %}set (env TDX_WEB_SERVICES_KEY, never shown){% else %}<b style="color:#b91c1c">not set</b>{% endif %}</div></div>
+  <div class="field"><label>Integration identity</label><div class="mono">{{ integration_uid }}</div></div>
+  <div class="field"><label>Ticketing app ID</label><div class="mono">{{ app_id }}</div></div>
+  <div class="field"><label>Webhook URL (workflow web-service steps)</label><div class="mono">{{ s.webhook_url or '— (log only)' }}</div></div></div>
+  <h2>Endpoints</h2><pre class="mono" style="font-size:12px;white-space:pre-wrap">POST /auth/loginadmin {BEID, WebServicesKey} → token (text)      POST /auth {username, password} → token
+GET  /auth/getuser                                              GET  /accounts · GET /groups
+GET  /{{ app_id }}/tickets/statuses | priorities | types | forms
+POST /{{ app_id }}/tickets  · GET /{{ app_id }}/tickets/{id} · PATCH /{{ app_id }}/tickets/{id} [{op,path,value}] · POST /{{ app_id }}/tickets/search
+GET|POST /{{ app_id }}/tickets/{id}/feed {Comments, NewStatusID, IsPrivate}
+GET|POST /{{ app_id }}/tickets/{id}/tasks · PUT /…/tasks/{taskId} · POST /…/tasks/{taskId}/feed {PercentComplete, Comments}
+GET  /{{ app_id }}/tickets/{id}/workflow · POST /…/workflow/approvals/{approvalId} {Approve, Comments}
+GET  /people/{uid} · POST /people/lookup?searchText= · POST /people/search · POST /people · POST /people/{uid} · POST /people/import</pre></div></div>
+{% elif tab == 'log' %}<div class="card"><div class="bd" style="padding:0"><table><tr><th>Date</th><th>Method</th><th>Path</th><th>Status</th><th>Caller</th><th>ms</th></tr>{% for l in logs %}<tr><td class="mono">{{ l.Date[:19] }}</td><td>{{ l.Method }}</td><td class="mono">{{ l.Path }}</td><td>{{ l.Status }}</td><td>{{ l.Caller }}</td><td>{{ l.DurationMs }}</td></tr>{% else %}<tr><td colspan="6" class="muted">No API calls yet.</td></tr>{% endfor %}</table></div></div>
+{% endif %}
+{% endblock %}

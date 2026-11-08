@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% from "_m.html" import status %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDClient">Services</a><a href="/TDClient/Requests/TicketRequests" class="on">My Requests</a></div></div>{% endblock %}
+{% block content %}
+<h1>My Requests</h1>
+<div class="card"><div class="bd" style="padding:0"><table><tr><th>ID</th><th>Title</th><th>Service</th><th>Status</th><th>Created</th></tr>
+{% for t in rows %}<tr><td><a href="/TDClient/Requests/TicketRequests/TicketDet?TicketID={{ t.ID }}">{{ t.ID }}</a></td><td><a href="/TDClient/Requests/TicketRequests/TicketDet?TicketID={{ t.ID }}">{{ t.Title }}</a></td><td>{{ t.ServiceName or t.TypeName }}</td><td>{{ status(t) }}</td><td class="mono">{{ t.CreatedDate[:16] }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No requests yet.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block sub %}<div class="sub"><div class="wrap"><form method="get" style="display:flex;gap:8px;align-items:center"><input name="q" value="{{ q }}" placeholder="Name, username, email, Associate ID" style="font:inherit;padding:4px 8px;width:300px">
+  <label><input type="checkbox" name="inactive" value="1" {% if inactive %}checked{% endif %}> include inactive</label><button class="btn sm sec">Search</button></form></div></div>{% endblock %}
+{% block content %}
+<h1>People <span class="muted" style="font-weight:400;font-size:13px">· {{ rows | length }} shown</span></h1>
+<div class="grid">
+  <div class="card"><div class="bd" style="padding:0"><table><tr><th>Name</th><th>Username</th><th>Email</th><th>Title</th><th>Department</th><th>Reports to</th><th>Ext. ID</th><th>Role</th><th>Active</th></tr>
+    {% for p in rows %}<tr><td><a href="/TDNext/Apps/People/{{ p.UID }}">{{ p.LastName }}, {{ p.FirstName }}</a></td><td class="mono">{{ p.UserName }}</td><td>{{ p.PrimaryEmail }}</td><td>{{ p.Title }}</td><td>{{ p.DefaultAccountName }}</td><td>{{ p.ReportsToFullName }}</td><td class="mono">{{ p.ExternalID }}</td><td>{{ p.SecurityRoleName }}</td><td>{{ 'Yes' if p.IsActive else 'No' }}</td></tr>{% endfor %}</table></div></div>
+  <div>
+    <div class="card"><div class="hd">People Import</div><div class="bd">
+      <p class="muted" style="margin:0 0 8px">Upload the HR roster CSV (the same file the identity pipeline consumes). Matches on <b>Associate ID</b> → ExternalID; Terminated rows deactivate; managers resolve by Associate ID.</p>
+      <form method="post" action="/TDNext/Apps/People/Import" enctype="multipart/form-data"><input type="file" name="file" accept=".csv" required><button class="btn sm" type="submit" style="margin-top:8px">Import</button></form>
+      <p class="muted mono" style="margin:10px 0 0;font-size:11px">API: POST /TDWebApi/api/people/import (multipart file or CSV body)</p>
+    </div></div>
+    <div class="card"><div class="hd">Import history</div><div class="bd" style="padding:0"><table><tr><th>Date</th><th>Source</th><th>Rows</th><th>+</th><th>~</th><th>off</th><th>Err</th></tr>
+      {% for i in imports %}<tr><td class="mono">{{ i.Date[:16] }}</td><td>{{ i.Source }}</td><td>{{ i.Rows }}</td><td>{{ i.Created }}</td><td>{{ i.Updated }}</td><td>{{ i.Deactivated }}</td><td title="{{ i.Errors }}">{{ i.Errors.count('\n') + 1 if i.Errors else 0 }}</td></tr>{% else %}<tr><td colspan="7" class="muted">No imports yet.</td></tr>{% endfor %}</table></div></div>
+  </div>
+</div>
+{% endblock %}

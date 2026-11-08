@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ s.tenant_name }} · ITSM</title>
+<style>
+  :root { --bar:#232a31; --bar2:#2f3942; --accent:#0e7c86; --accent2:#0a5f67; --ink:#222; --muted:#6b7280; --line:#d9dde2; --bg:#eef1f4; --link:#0b63b6; }
+  * { box-sizing:border-box; } body { margin:0; font:14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  a { color:var(--link); } .wrap { max-width:1320px; margin:0 auto; padding:0 20px; }
+  .top { background:var(--bar); color:#fff; } .top .wrap { display:flex; align-items:center; gap:18px; height:48px; }
+  .brand { font-weight:800; letter-spacing:.4px; } .brand small { font-weight:400; color:#aab4be; margin-left:8px; }
+  .apps { display:flex; gap:2px; margin-left:12px; height:48px; }
+  .apps a { color:#d7dde3; text-decoration:none; padding:0 14px; display:flex; align-items:center; border-bottom:3px solid transparent; font-weight:600; }
+  .apps a.on, .apps a:hover { color:#fff; border-bottom-color:var(--accent); background:var(--bar2); }
+  .who { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; color:#d7dde3; }
+  .who select { font:inherit; padding:3px 6px; border-radius:3px; border:1px solid #556; background:#fff; color:#222; }
+  .sub { background:#fff; border-bottom:1px solid var(--line); } .sub .wrap { display:flex; align-items:center; gap:14px; height:42px; }
+  .sub a { text-decoration:none; color:#333; padding:0 4px; } .sub a.on { color:var(--accent); font-weight:700; }
+  .sub .btn { margin-left:auto; }
+  main { padding:16px 0 48px; } h1 { font-size:20px; font-weight:600; margin:0 0 12px; } h2 { font-size:15px; margin:18px 0 8px; }
+  .msg { background:#e6f4f5; border:1px solid #b9dfe2; color:#0a4f55; padding:8px 12px; border-radius:3px; margin-bottom:12px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:3px; margin-bottom:14px; }
+  .card .hd { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--line); background:#f7f8fa; font-weight:600; }
+  .card .bd { padding:12px; }
+  table { width:100%; border-collapse:collapse; background:#fff; } th, td { text-align:left; padding:7px 9px; border-bottom:1px solid #e8ebee; vertical-align:top; font-size:13px; }
+  th { background:#f7f8fa; color:#555; font-weight:600; } tr:last-child td { border-bottom:0; }
+  .pill { display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .st-New { background:#e0ecff; color:#1e3a8a; } .st-InProcess, .st-Open { background:#dff3e3; color:#1b6e2e; } .st-OnHold { background:#fdf0cf; color:#8a5a00; }
+  .st-Completed, .st-Resolved, .st-Closed { background:#eceff2; color:#555; } .st-Cancelled { background:#fee2e2; color:#991b1b; }
+  .pr-1 { color:#6b7280; } .pr-2 { color:#1f2937; } .pr-3 { color:#b45309; font-weight:700; } .pr-4 { color:#b91c1c; font-weight:700; }
+  .grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; } @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+  .fields { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px 18px; } .field label { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .fgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px 16px; } .fi label { display:block; font-size:12px; color:#555; margin-bottom:2px; }
+  .fi input, .fi select, .fi textarea { width:100%; padding:6px 8px; border:1px solid #bfc5cc; border-radius:3px; font:inherit; background:#fff; } .fi.wide { grid-column:1 / -1; }
+  .btn { display:inline-block; padding:6px 14px; border:1px solid var(--accent); border-radius:3px; background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; text-decoration:none; }
+  .btn:hover { background:var(--accent2); } .btn.sec { background:#fff; color:#333; border-color:#bfc5cc; } .btn.sm { padding:3px 9px; font-size:12px; }
+  .muted { color:var(--muted); } .mono { font-family:ui-monospace, Menlo, monospace; font-size:12px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:14px; }
+  .tile { background:#fff; border:1px solid var(--line); border-top:3px solid var(--accent); padding:10px 12px; text-decoration:none; color:#333; } .tile .n { font-size:26px; font-weight:700; color:#000; }
+  .wf { display:flex; gap:8px; } .wf .stage { flex:1; border:1px solid var(--line); border-radius:3px; padding:8px; background:#fafbfc; } .wf .stage.current { border-color:var(--accent); background:#f0fafb; } .wf .stage.done { opacity:.75; }
+  .wf .stage h4 { margin:0 0 6px; font-size:13px; } .wf .step { font-size:12px; padding:3px 0; } .wf .step::before { content:"○ "; color:#999; } .wf .step.done::before { content:"● "; color:#1b6e2e; } .wf .step.open::before { content:"◐ "; color:#b45309; } .wf .step.rejected::before { content:"✕ "; color:#b91c1c; }
+  .feed .item { border-bottom:1px solid #eef0f2; padding:8px 0; } .feed .item:last-child { border-bottom:0; } .feed .meta { font-size:12px; color:var(--muted); } .feed .Private { background:#fff8e6; }
+  .feed .System, .feed .Workflow, .feed .Notification, .feed .Task, .feed .Status { color:#444; font-size:13px; }
+  details.edit > summary { cursor:pointer; color:var(--link); font-size:13px; }
+  footer { border-top:1px solid var(--line); color:#888; font-size:12px; padding:14px 0; }
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <span class="brand">{{ s.tenant_name }}<small>ITSM</small></span>
+  <nav class="apps">
+    <a href="/TDNext" class="{% if nav == 'desktop' %}on{% endif %}">Desktop</a>
+    <a href="/TDNext/Apps/{{ app_id }}/Tickets" class="{% if nav == 'tickets' %}on{% endif %}">IT Tickets</a>
+    <a href="/TDNext/Apps/People" class="{% if nav == 'people' %}on{% endif %}">People</a>
+    <a href="/TDAdmin" class="{% if nav == 'admin' %}on{% endif %}">Admin</a>
+    <a href="/TDClient" class="{% if nav == 'client' %}on{% endif %}">Client Portal</a>
+  </nav>
+  {% if me is defined %}
+  <form class="who" method="post" action="/TDNext/switch-user"><input type="hidden" name="next" value="{{ request.url.path }}">
+    <span>Acting as</span>
+    <select name="uid" onchange="this.form.submit()">{% for t in technicians %}<option value="{{ t.UID }}" {% if t.UID == me.UID %}selected{% endif %}>{{ t.FirstName }} {{ t.LastName }} · {{ t.Title }}</option>{% endfor %}</select>
+  </form>
+  {% endif %}
+</div></div>
+{% block sub %}{% endblock %}
+<main><div class="wrap">
+{% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+{% block content %}{% endblock %}
+</div></main>
+<footer><div class="wrap">mock-tdx · a lab stand-in for an ITSM platform with synthetic data. Not affiliated with, endorsed by, or a product of TeamDynamix.</div></footer>
+</body></html>

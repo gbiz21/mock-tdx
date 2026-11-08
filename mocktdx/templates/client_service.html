@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDClient">Services</a><a href="/TDClient/Requests/TicketRequests">My Requests</a></div></div>{% endblock %}
+{% block content %}
+<h1>{{ svc.Name }}</h1>
+<p class="muted">{{ svc.Description }}</p>
+<form method="post" action="/TDClient/Requests/ServiceDet" class="card"><div class="bd"><input type="hidden" name="service_id" value="{{ svc.ID }}">
+<div class="fgrid">
+  <div class="fi wide"><label>Title</label><input name="title" value="{{ svc.Name }}" required></div>
+  <div class="fi wide"><label>Details</label><textarea name="description" rows="3"></textarea></div>
+  {% if form %}{% for a in form.Attributes %}<div class="fi"><label>{{ a.Name }}{% if a.IsRequired %} *{% endif %}</label>
+    {% if a.Choices %}<select name="attr_{{ a.ID }}" {% if a.IsRequired %}required{% endif %}><option value="">—</option>{% for c in a.Choices %}<option>{{ c.Name }}</option>{% endfor %}</select>
+    {% elif a.FieldType == 'date' %}<input type="date" name="attr_{{ a.ID }}" {% if a.IsRequired %}required{% endif %}>
+    {% elif a.FieldType == 'textarea' %}<textarea name="attr_{{ a.ID }}" rows="2" {% if a.IsRequired %}required{% endif %}></textarea>
+    {% else %}<input name="attr_{{ a.ID }}" {% if a.IsRequired %}required{% endif %}>{% endif %}</div>{% endfor %}{% endif %}
+</div><button class="btn" type="submit" style="margin-top:10px">Submit request</button></div></form>
+{% endblock %}

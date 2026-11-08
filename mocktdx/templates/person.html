@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_m.html" import f, ticket_rows %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDNext/Apps/People">← People</a></div></div>{% endblock %}
+{% block content %}
+<h1>{{ p.FullName }} <span class="muted" style="font-weight:400;font-size:13px">· {{ p.Title }}</span></h1>
+<div class="card"><div class="hd">Profile</div><div class="bd"><div class="fields">
+  {{ f('UID', p.UID) }}{{ f('Username', p.UserName) }}{{ f('Primary email', p.PrimaryEmail) }}{{ f('External ID (HR Associate ID)', p.ExternalID) }}
+  {{ f('Department', p.DefaultAccountName) }}{{ f('Reports to', p.ReportsToFullName) }}{{ f('Location', p.LocationName) }}{{ f('Security role', p.SecurityRoleName) }}
+  {{ f('Groups', p.GroupIDs | join(', ')) }}{{ f('Active', 'Yes' if p.IsActive else 'No') }}{{ f('Created', p.CreatedDate[:16]) }}{{ f('Modified', p.ModifiedDate[:16]) }}
+</div></div></div>
+<div class="card"><div class="hd">Tickets requested</div><div class="bd" style="padding:0">{{ ticket_rows(tickets, app_id) }}</div></div>
+{% endblock %}

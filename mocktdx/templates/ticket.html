@@ -1,0 +1,73 @@
+{% extends "base.html" %}{% from "_m.html" import status, prio, f %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDNext/Apps/{{ app_id }}/Tickets">← Tickets</a><span class="muted">Ticket {{ t.ID }}</span></div></div>{% endblock %}
+{% block content %}
+<h1>{{ t.ID }} · {{ t.Title }} {{ status(t) }}</h1>
+<div class="grid">
+<div>
+  <div class="card"><div class="hd">Details</div><div class="bd">
+    <div class="fields">
+      {{ f('Type', t.TypeCategoryName ~ ' · ' ~ t.TypeName) }}{{ f('Form', t.FormName) }}{{ f('Service', t.ServiceName) }}{{ f('Source', t.SourceName) }}
+      {{ f('Priority', t.PriorityName) }}{{ f('Account / Dept', t.AccountName) }}{{ f('Requestor', t.RequestorName ~ (' · ' ~ t.RequestorEmail if t.RequestorEmail else '')) }}
+      {{ f('Responsible', (t.ResponsibleFullName ~ ' · ' if t.ResponsibleFullName else '') ~ t.ResponsibleGroupName) }}
+      {{ f('Created', t.CreatedDate[:16] ~ ' by ' ~ t.CreatedFullName) }}{{ f('Modified', t.ModifiedDate[:16]) }}{{ f('Due', t.EndDate) }}{{ f('Completed', t.CompletedDate) }}
+    </div>
+    {% if t.Description %}<p style="white-space:pre-wrap;margin:12px 0 0">{{ t.Description }}</p>{% endif %}
+    {% if t.Attributes %}<h2>{{ t.FormName or 'Attributes' }}</h2><div class="fields">{% for a in t.Attributes %}{{ f(a.Name, a.ValueText) }}{% endfor %}</div>{% endif %}
+  </div></div>
+
+  {% if wf %}
+  <div class="card"><div class="hd">Workflow · {{ wf.Name }} <span class="pill st-{{ 'InProcess' if wf.Status == 'InProgress' else ('Completed' if wf.Status == 'Completed' else 'Cancelled') }}">{{ wf.Status }}</span></div><div class="bd">
+    <div class="wf">{% for st in wf.Stages %}<div class="stage {% if st.current %}current{% elif st.done %}done{% endif %}"><h4>{{ st.index + 1 }}. {{ st.name }}</h4>
+      {% for step in st.steps %}<div class="step {{ step.state }}">{{ step.title or step.type ~ (': ' ~ step.event if step.event else '') }}</div>{% endfor %}</div>{% endfor %}</div>
+  </div></div>
+  {% elif t.StatusClass < 3 %}
+  <div class="card"><div class="hd">Workflow</div><div class="bd"><form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/workflow" style="display:flex;gap:8px;align-items:center">
+    <select name="workflow_id" style="font:inherit;padding:5px">{% for w in L.workflows %}<option value="{{ w.ID }}">{{ w.Name }}</option>{% endfor %}</select><button class="btn sm" type="submit">Start workflow</button>
+    <span class="muted">No workflow was attached by an automation rule.</span></form></div></div>
+  {% endif %}
+
+  <div class="card"><div class="hd">Tasks</div><div class="bd" style="padding:0">
+    <table><tr><th>#</th><th>Task</th><th>Responsible</th><th>Due</th><th>%</th><th></th></tr>
+    {% for tk in tasks %}<tr><td>{{ tk.ID }}</td><td>{{ tk.Title }}{% if tk.Description %}<br><span class="muted">{{ tk.Description }}</span>{% endif %}{% if tk.WorkflowStepID %} <span class="mono muted">[{{ tk.WorkflowStepID }}]</span>{% endif %}</td>
+      <td>{{ tk.ResponsibleGroupName }}{% if tk.ResponsibleFullName %}<br>{{ tk.ResponsibleFullName }}{% endif %}</td><td class="mono">{{ tk.EndDate or '' }}</td>
+      <td>{{ tk.PercentComplete }}{% if tk.CompletedDate %}<br><span class="muted">{{ tk.CompletedFullName }}</span>{% endif %}</td>
+      <td>{% if tk.PercentComplete < 100 %}<form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/tasks/{{ tk.ID }}" style="display:flex;gap:4px;align-items:center">
+        <input type="hidden" name="percent" value="100"><select name="responsible_uid" style="font:inherit;padding:3px;max-width:140px"><option value="">assign…</option>{% for p in technicians %}<option value="{{ p.UID }}" {% if p.UID == me.UID %}selected{% endif %}>{{ p.LastName }}</option>{% endfor %}</select>
+        <input name="comments" placeholder="note" style="font:inherit;padding:3px;width:120px"><button class="btn sm" type="submit">Complete</button></form>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="6" class="muted">No tasks.</td></tr>{% endfor %}</table>
+    <details class="edit" style="padding:10px 12px"><summary>Add a task</summary><form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/tasks"><div class="fgrid">
+      <div class="fi wide"><label>Title</label><input name="title" required></div><div class="fi wide"><label>Description</label><input name="description"></div>
+      <div class="fi"><label>Responsible group</label><select name="group_id">{% for g in L.groups %}<option value="{{ g.ID }}">{{ g.Name }}</option>{% endfor %}</select></div>
+      <div class="fi"><label>Due</label><input type="date" name="end_date"></div></div><button class="btn sm" type="submit" style="margin-top:8px">Add task</button></form></details>
+  </div></div>
+
+  {% if approvals %}
+  <div class="card"><div class="hd">Approvals</div><div class="bd" style="padding:0"><table><tr><th>Step</th><th>Approver</th><th>Status</th><th></th></tr>
+    {% for a in approvals %}<tr><td>{{ a.Title }}</td><td>{{ a.ApproverUid }}</td><td>{{ a.Status }}{% if a.Comment %} · {{ a.Comment }}{% endif %}</td>
+      <td>{% if a.Status == 'Pending' %}<form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/approvals/{{ a.ID }}" style="display:flex;gap:4px"><input name="comments" placeholder="comment" style="font:inherit;padding:3px">
+        <button class="btn sm" name="decision" value="approve">Approve</button><button class="btn sm sec" name="decision" value="reject">Reject</button></form>{% endif %}</td></tr>{% endfor %}</table></div></div>
+  {% endif %}
+
+  <div class="card"><div class="hd">Feed</div><div class="bd">
+    <form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/comment"><div class="fgrid">
+      <div class="fi wide"><textarea name="comments" rows="2" placeholder="Add an update…"></textarea></div>
+      <div class="fi"><label>New status</label><select name="status_id"><option value="">(keep {{ t.StatusName }})</option>{% for st in L.statuses %}<option value="{{ st.ID }}">{{ st.Name }}</option>{% endfor %}</select></div>
+      <div class="fi"><label>&nbsp;</label><label><input type="checkbox" name="private"> Private (technicians only)</label></div>
+    </div><button class="btn sm" type="submit" style="margin-top:8px">Post</button></form>
+    <div class="feed" style="margin-top:12px">{% for e in feed %}<div class="item {{ e.EntryType }} {% if e.IsPrivate %}Private{% endif %}">
+      <div class="meta">{{ e.CreatedDate[:16] }} · {{ e.CreatedFullName }} · {{ e.EntryType }}{% if e.IsPrivate %} · private{% endif %}</div>
+      {% if e.NewStatus %}<div>Status changed{% if e.OldStatus %} from <b>{{ e.OldStatus }}</b>{% endif %} to <b>{{ e.NewStatus }}</b></div>{% endif %}
+      {% if e.Body %}<div style="white-space:pre-wrap">{{ e.Body }}</div>{% endif %}</div>{% endfor %}</div>
+  </div></div>
+</div>
+<div>
+  <div class="card"><div class="hd">Update</div><div class="bd"><form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}/update"><div class="fgrid" style="grid-template-columns:1fr">
+    <div class="fi"><label>Priority</label><select name="priority_id">{% for p in L.priorities %}<option value="{{ p.ID }}" {% if p.ID == t.PriorityID %}selected{% endif %}>{{ p.Name }}</option>{% endfor %}</select></div>
+    <div class="fi"><label>Responsible group</label><select name="group_id"><option value="">—</option>{% for g in L.groups %}<option value="{{ g.ID }}" {% if g.ID == t.ResponsibleGroupID %}selected{% endif %}>{{ g.Name }}</option>{% endfor %}</select></div>
+    <div class="fi"><label>Responsible person</label><select name="responsible_uid"><option value="">—</option>{% for p in technicians %}<option value="{{ p.UID }}" {% if p.UID == t.ResponsibleUid %}selected{% endif %}>{{ p.LastName }}, {{ p.FirstName }}</option>{% endfor %}</select></div>
+    <div class="fi"><label>Due date</label><input type="date" name="end_date" value="{{ (t.EndDate or '')[:10] }}"></div>
+  </div><button class="btn sm" type="submit" style="margin-top:8px">Save</button></form></div></div>
+  <div class="card"><div class="hd">API</div><div class="bd mono" style="font-size:12px">GET /TDWebApi/api/{{ app_id }}/tickets/{{ t.ID }}<br>GET …/tickets/{{ t.ID }}/tasks<br>POST …/tickets/{{ t.ID }}/feed<br>GET …/tickets/{{ t.ID }}/workflow</div></div>
+</div>
+</div>
+{% endblock %}

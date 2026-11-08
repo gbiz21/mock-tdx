@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% from "_m.html" import status, f %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDClient">Services</a><a href="/TDClient/Requests/TicketRequests">My Requests</a></div></div>{% endblock %}
+{% block content %}
+<h1>{{ t.ID }} · {{ t.Title }} {{ status(t) }}</h1>
+<div class="grid"><div>
+  <div class="card"><div class="hd">Request</div><div class="bd"><div class="fields">{{ f('Service', t.ServiceName or t.TypeName) }}{{ f('Submitted', t.CreatedDate[:16]) }}{{ f('Responsible', t.ResponsibleGroupName) }}{{ f('Expected completion', t.EndDate) }}</div>
+    {% if t.Description %}<p style="white-space:pre-wrap">{{ t.Description }}</p>{% endif %}{% if t.Attributes %}<div class="fields">{% for a in t.Attributes %}{{ f(a.Name, a.ValueText) }}{% endfor %}</div>{% endif %}</div></div>
+  {% set mine = approvals | selectattr('ApproverUid', 'equalto', me.UID) | selectattr('Status', 'equalto', 'Pending') | list %}
+  {% if mine %}<div class="card"><div class="hd">Your approval is needed</div><div class="bd">{% for a in mine %}<form method="post" style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><input type="hidden" name="ticket_id" value="{{ t.ID }}"><input type="hidden" name="approval_id" value="{{ a.ID }}"><span>{{ a.Title }}</span><input name="comments" placeholder="comment" style="font:inherit;padding:4px"><button class="btn sm" name="decision" value="approve">Approve</button><button class="btn sm sec" name="decision" value="reject">Reject</button></form>{% endfor %}</div></div>{% endif %}
+  <div class="card"><div class="hd">Progress</div><div class="bd" style="padding:0"><table><tr><th>Step</th><th>Team</th><th>Due</th><th>Done</th></tr>{% for tk in tasks %}<tr><td>{{ tk.Title }}</td><td>{{ tk.ResponsibleGroupName }}</td><td class="mono">{{ tk.EndDate or '' }}</td><td>{{ 'Yes' if tk.PercentComplete >= 100 else '' }}</td></tr>{% else %}<tr><td colspan="4" class="muted">No steps yet.</td></tr>{% endfor %}</table></div></div>
+  <div class="card"><div class="hd">Updates</div><div class="bd"><form method="post" style="display:flex;gap:8px"><input type="hidden" name="ticket_id" value="{{ t.ID }}"><input name="comments" placeholder="Add a comment" style="flex:1;font:inherit;padding:5px" required><button class="btn sm">Post</button></form>
+    <div class="feed" style="margin-top:10px">{% for e in feed %}<div class="item"><div class="meta">{{ e.CreatedDate[:16] }} · {{ e.CreatedFullName }}</div>{% if e.NewStatus %}<div>Status: <b>{{ e.NewStatus }}</b></div>{% endif %}{% if e.Body %}<div>{{ e.Body }}</div>{% endif %}</div>{% endfor %}</div></div></div>
+</div></div>
+{% endblock %}

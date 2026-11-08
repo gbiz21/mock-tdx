@@ -1,0 +1,9 @@
+{% macro status(t) -%}<span class="pill st-{{ t.StatusName | replace(' ', '') }}">{{ t.StatusName }}</span>{%- endmacro %}
+{% macro prio(t) -%}<span class="pr-{{ t.PriorityID }}">{{ t.PriorityName }}</span>{%- endmacro %}
+{% macro f(label, value) -%}<div class="field"><label>{{ label }}</label><div>{% if value is none or value == '' %}—{% else %}{{ value }}{% endif %}</div></div>{%- endmacro %}
+{% macro ticket_rows(rows, app_id) -%}
+<table><tr><th>ID</th><th>Title</th><th>Type</th><th>Status</th><th>Priority</th><th>Requestor</th><th>Responsible</th><th>Modified</th></tr>
+{% for t in rows %}<tr><td><a href="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}">{{ t.ID }}</a></td><td><a href="/TDNext/Apps/{{ app_id }}/Tickets/{{ t.ID }}">{{ t.Title }}</a></td>
+<td>{{ t.TypeName }}</td><td>{{ status(t) }}</td><td>{{ prio(t) }}</td><td>{{ t.RequestorName }}</td><td>{{ t.ResponsibleFullName or t.ResponsibleGroupName }}</td><td class="mono muted">{{ t.ModifiedDate[:16] }}</td></tr>
+{% else %}<tr><td colspan="8" class="muted">No tickets.</td></tr>{% endfor %}</table>
+{%- endmacro %}

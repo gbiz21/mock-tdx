@@ -1,0 +1,25 @@
+[Unit]
+Description=mock-tdx ITSM stand-in (TDX-shaped Web API, agent UI, client portal)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mocktdx
+Group=mocktdx
+WorkingDirectory=/opt/mock-tdx
+EnvironmentFile=/etc/mock-tdx/env
+ExecStart=/opt/mock-tdx/.venv/bin/python -m mocktdx serve
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mock-tdx
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

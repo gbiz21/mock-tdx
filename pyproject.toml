@@ -1,0 +1,27 @@
+[project]
+name = "mock-tdx"
+version = "0.1.0"
+description = "TeamDynamix-style ITSM stand-in: ticketing app, ticket tasks, workflows, automation rules, people import, and a Web API with TDX's endpoint and JSON shapes, for building HR-driven onboarding/offboarding automation."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["mocktdx*"]
+
+[tool.setuptools.package-data]
+mocktdx = ["templates/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

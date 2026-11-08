@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% from "_m.html" import status, prio, ticket_rows %}
+{% block content %}
+<h1>Desktop <span class="muted" style="font-weight:400;font-size:13px">· {{ me.FirstName }} {{ me.LastName }}</span></h1>
+<div class="tiles">
+  <a class="tile" href="/TDNext/Apps/{{ app_id }}/Tickets?view=open"><div class="n">{{ c.new }}</div>New tickets</a>
+  <a class="tile" href="/TDNext/Apps/{{ app_id }}/Tickets?view=open"><div class="n">{{ c.in_process }}</div>In process / on hold</a>
+  <a class="tile" href="#mywork"><div class="n">{{ c.open_tasks }}</div>Open tasks</a>
+  <a class="tile" href="#mywork"><div class="n">{{ c.overdue_tasks }}</div>Overdue tasks</a>
+  <a class="tile" href="#mywork"><div class="n">{{ c.pending_approvals }}</div>Pending approvals</a>
+  <a class="tile" href="/TDNext/Apps/{{ app_id }}/Tickets?view=closed"><div class="n">{{ c.resolved_7d }}</div>Resolved, 7 days</a>
+  <a class="tile" href="/TDNext/Apps/People"><div class="n">{{ c.people }}</div>Active people</a>
+</div>
+<div class="grid" id="mywork">
+  <div>
+    <div class="card"><div class="hd">My Work · tasks for my groups</div><div class="bd" style="padding:0">
+      <table><tr><th>Due</th><th>Task</th><th>Ticket</th><th>Group</th><th>%</th></tr>
+      {% for tk in work.tasks %}<tr><td class="mono">{{ tk.EndDate or '' }}</td><td>{{ tk.Title }}</td><td><a href="/TDNext/Apps/{{ app_id }}/Tickets/{{ tk.TicketID }}">{{ tk.TicketID }} · {{ tk.TicketTitle }}</a></td><td>{{ tk.ResponsibleGroupID }}</td><td>{{ tk.PercentComplete }}</td></tr>
+      {% else %}<tr><td colspan="5" class="muted">No open tasks for your groups.</td></tr>{% endfor %}</table></div></div>
+    <div class="card"><div class="hd">Recent tickets</div><div class="bd" style="padding:0">{{ ticket_rows(recent, app_id) }}</div></div>
+  </div>
+  <div>
+    <div class="card"><div class="hd">Approvals waiting on me</div><div class="bd" style="padding:0">
+      <table>{% for a in work.approvals %}<tr><td><a href="/TDNext/Apps/{{ app_id }}/Tickets/{{ a.TicketID }}">{{ a.TicketID }}</a></td><td>{{ a.Title }}<br><span class="muted">{{ a.TicketTitle }}</span></td></tr>{% else %}<tr><td class="muted">None</td></tr>{% endfor %}</table></div></div>
+    <div class="card"><div class="hd">Quick links</div><div class="bd">
+      <p><a href="/TDNext/Apps/{{ app_id }}/Tickets/New?type=2001">+ New Employee Onboarding ticket</a></p>
+      <p><a href="/TDNext/Apps/{{ app_id }}/Tickets/New?type=2002">+ New Employee Offboarding ticket</a></p>
+      <p><a href="/TDNext/Apps/People">People import (HR roster)</a></p>
+      <p><a href="/TDAdmin?tab=api">API credentials and log</a></p>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

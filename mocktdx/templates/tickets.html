@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% from "_m.html" import ticket_rows %}
+{% block sub %}<div class="sub"><div class="wrap">
+  <a href="/TDNext/Apps/{{ app_id }}/Tickets?view=open" class="{% if view == 'open' %}on{% endif %}">Open</a>
+  <a href="/TDNext/Apps/{{ app_id }}/Tickets?view=closed" class="{% if view == 'closed' %}on{% endif %}">Closed</a>
+  <a href="/TDNext/Apps/{{ app_id }}/Tickets?view=all" class="{% if view == 'all' %}on{% endif %}">All</a>
+  <form method="get" style="display:flex;gap:8px;align-items:center"><input type="hidden" name="view" value="{{ view }}">
+    <select name="group" style="font:inherit;padding:4px"><option value="">All groups</option>{% for g in L.groups %}<option value="{{ g.ID }}" {% if group == g.ID %}selected{% endif %}>{{ g.Name }}</option>{% endfor %}</select>
+    <input name="q" value="{{ q }}" placeholder="Search title, description, ID" style="font:inherit;padding:4px 8px;width:260px"><button class="btn sm sec" type="submit">Filter</button></form>
+  <a class="btn" href="/TDNext/Apps/{{ app_id }}/Tickets/New">+ New</a>
+</div></div>{% endblock %}
+{% block content %}
+<h1>IT Tickets <span class="muted" style="font-weight:400;font-size:13px">· {{ rows | length }} shown</span></h1>
+<div class="card"><div class="bd" style="padding:0">{{ ticket_rows(rows, app_id) }}</div></div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block sub %}<div class="sub"><div class="wrap"><a href="/TDClient" class="on">Services</a><a href="/TDClient/Requests/TicketRequests">My Requests</a><span class="muted">Client portal · requesting as {{ me.FirstName }} {{ me.LastName }}</span></div></div>{% endblock %}
+{% block content %}
+<h1>Service Catalog</h1>
+<div class="tiles" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr))">
+{% for sv in services %}<a class="tile" href="/TDClient/Requests/ServiceDet?ID={{ sv.ID }}"><div style="font-size:11px;color:#777;text-transform:uppercase">{{ sv.CategoryName }}</div><div style="font-weight:700;margin:4px 0">{{ sv.Name }}</div><div class="muted" style="font-size:12px">{{ sv.Description }}</div></a>{% endfor %}
+</div>
+{% endblock %}

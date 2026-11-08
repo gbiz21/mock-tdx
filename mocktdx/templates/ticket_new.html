@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>New Ticket</h1>
+<form method="post" action="/TDNext/Apps/{{ app_id }}/Tickets/New" class="card"><div class="bd">
+<div class="fgrid">
+  <div class="fi"><label>Type</label><select name="type_id" id="type_id" required>{% for t in L.types %}<option value="{{ t.ID }}" {% if type_id == t.ID %}selected{% endif %}>{{ t.CategoryName }} · {{ t.Name }}</option>{% endfor %}</select></div>
+  <div class="fi"><label>Form</label><select name="form_id" id="form_id"><option value="">(none)</option>{% for fid, fm in L.forms.items() %}<option value="{{ fid }}" data-type="{{ fm.TypeID }}">{{ fm.Name }}</option>{% endfor %}</select></div>
+  <div class="fi"><label>Priority</label><select name="priority_id">{% for p in L.priorities %}<option value="{{ p.ID }}" {% if p.ID == 2 %}selected{% endif %}>{{ p.Name }}</option>{% endfor %}</select></div>
+  <div class="fi"><label>Requestor</label><select name="requestor_uid"><option value="">(none)</option>{% for p in people %}<option value="{{ p.UID }}">{{ p.LastName }}, {{ p.FirstName }}{% if p.ExternalID %} · {{ p.ExternalID }}{% endif %}</option>{% endfor %}</select></div>
+  <div class="fi"><label>Responsible group</label><select name="group_id"><option value="">(automation rule decides)</option>{% for g in L.groups %}<option value="{{ g.ID }}">{{ g.Name }}</option>{% endfor %}</select></div>
+  <div class="fi wide"><label>Title</label><input name="title" required></div>
+  <div class="fi wide"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+</div>
+{% for fid, fm in L.forms.items() %}
+<div class="formattrs" data-form="{{ fid }}" style="display:none"><h2>{{ fm.Name }} form</h2><div class="fgrid">
+  {% for a in fm.Attributes %}<div class="fi"><label>{{ a.Name }}{% if a.IsRequired %} *{% endif %}</label>
+    {% if a.Choices %}<select name="attr_{{ a.ID }}" form="" data-name="attr_{{ a.ID }}"><option value="">—</option>{% for c in a.Choices %}<option>{{ c.Name }}</option>{% endfor %}</select>
+    {% elif a.FieldType == 'date' %}<input type="date" data-name="attr_{{ a.ID }}">
+    {% elif a.FieldType == 'textarea' %}<textarea rows="2" data-name="attr_{{ a.ID }}"></textarea>
+    {% else %}<input data-name="attr_{{ a.ID }}">{% endif %}</div>{% endfor %}
+</div></div>
+{% endfor %}
+<div style="margin-top:12px"><button class="btn" type="submit">Save</button> <a class="btn sec" href="/TDNext/Apps/{{ app_id }}/Tickets">Cancel</a></div>
+</div></form>
+<script>
+  const typeSel = document.getElementById('type_id'), formSel = document.getElementById('form_id');
+  function syncForm() {
+    // pick the form that belongs to the type, show its attributes, and name only the visible inputs
+    const want = [...formSel.options].find(o => o.dataset.type === typeSel.value);
+    formSel.value = want ? want.value : '';
+    document.querySelectorAll('.formattrs').forEach(div => {
+      const on = div.dataset.form === formSel.value;
+      div.style.display = on ? '' : 'none';
+      div.querySelectorAll('[data-name]').forEach(el => { if (on) { el.name = el.dataset.name; el.removeAttribute('form'); } else { el.removeAttribute('name'); el.setAttribute('form', ''); } });
+    });
+  }
+  typeSel.addEventListener('change', syncForm); formSel.addEventListener('change', () => { document.querySelectorAll('.formattrs').forEach(div => { const on = div.dataset.form === formSel.value; div.style.display = on ? '' : 'none'; div.querySelectorAll('[data-name]').forEach(el => { if (on) { el.name = el.dataset.name; el.removeAttribute('form'); } else { el.removeAttribute('name'); el.setAttribute('form', ''); } }); }); });
+  syncForm();
+</script>
+{% endblock %}
